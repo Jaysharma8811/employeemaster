@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 import '../data_model/employee_data_model.dart';
 import '../provider/employee_provider.dart';
 
 
 class EmployeeFormScreen extends StatefulWidget {
   final Employee? employee;
-  EmployeeFormScreen({this.employee});
+   var empcode;
+  EmployeeFormScreen({this.employee,this.empcode});
 
   @override
   _EmployeeFormScreenState createState() => _EmployeeFormScreenState();
@@ -18,10 +21,15 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
   final _empNameController = TextEditingController();
   final _mobileController = TextEditingController();
   final _dobController = TextEditingController();
-  final _dateOfJoiningController = TextEditingController();
+  var _dateOfJoiningController = TextEditingController();
   final _salaryController = TextEditingController();
   final _addressController = TextEditingController();
   final _remarkController = TextEditingController();
+  DateTime? _hireDate;
+  DateTime? _dob;
+  final uuid = Uuid();
+  final formatter = DateFormat.yMd();
+
 
   @override
   void initState() {
@@ -36,6 +44,35 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
       _addressController.text = widget.employee!.address;
       _remarkController.text = widget.employee!.remark;
     }
+    else{
+      _empCodeController.text=widget.empcode.toString();
+    }
+  }
+  _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null && picked != _hireDate)
+      setState(() {
+        _hireDate = picked;
+        _dateOfJoiningController.text=formatter.format(_hireDate!).toString();
+      });
+  }
+  _selectDateOB(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null && picked != _hireDate)
+      setState(() {
+        _dob = picked;
+        _dobController.text=formatter.format(_dob!).toString();
+      });
   }
 
   @override
@@ -55,6 +92,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
               TextFormField(
                 controller: _empCodeController,
                 decoration: InputDecoration(labelText: 'Employee Code'),
+                readOnly: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter employee code';
@@ -74,7 +112,9 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
               ),
               TextFormField(
                 controller: _mobileController,
+                maxLength: 10,
                 decoration: InputDecoration(labelText: 'Mobile No.'),
+                keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter mobile number';
@@ -91,15 +131,22 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                   }
                   return null;
                 },
+                onTap: (){
+                  _selectDateOB(context);
+                },
               ),
               TextFormField(
                 controller: _dateOfJoiningController,
-                decoration: InputDecoration(labelText: 'Date of Joining'),
+                decoration: InputDecoration(labelText: 'Date of Joining',
+                    ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter date of joining';
                   }
                   return null;
+                },
+                onTap: (){
+                  _selectDate(context);
                 },
               ),
               TextFormField(
